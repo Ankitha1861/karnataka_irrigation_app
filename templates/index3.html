@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Karnataka Irrigation Projects - Live Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, 5%); }
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 0 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 300;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.6);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .stats-container {
+            padding: 1.5rem 0;
+        }
+        select, option {
+    background-color: #1e1b4b; /* dark background to match theme */
+    color: #fff; /* white text */
+    border: 1px solid #4f46e5;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #6366f1;
+}
+
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem;
+            transition: all 0.4s;
+        }
+        /* ✅ Make all stat cards uniform height */
+.stat-card {
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-value {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--card-color);
+            opacity: 0.15;
+        }
+
+        .stat-icon i {
+            position: relative;
+            z-index: 1;
+            color: var(--card-color);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--card-color);
+            margin-bottom: 0.2rem;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-1 { --card-color: #6366f1; }
+        .card-2 { --card-color: #10b981; }
+        .card-3 { --card-color: #f59e0b; }
+        .card-4 { --card-color: #ec4899; }
+
+        .main-layout {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .sidebar {
+            width: 400px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: calc(100vh - 320px);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 280px;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-btn {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .projects-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .project-item {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid var(--status-color);
+        }
+
+        .project-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .project-item.selected {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
+
+        .project-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.6rem;
+            line-height: 1.3;
+        }
+
+        .project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .project-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .project-meta-item i {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--status-color);
+            color: #fff;
+        }
+
+        .map-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .map-wrapper {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: calc(100vh - 320px);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .legend {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem;
+        }
+
+        .legend-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .legend-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .data-table-container {
+            padding: 0 1.5rem 1.5rem;
+            display: none;
+        }
+
+        .data-table-container.active {
+            display: block;
+        }
+
+        .table-wrapper {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .table-search {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .table-search input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .table-search input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #6366f1;
+        }
+
+        .table-search i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .table-entries {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .table-entries select {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+        }
+
+        .table-responsive {
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+        }
+
+        .table {
+            color: #fff;
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table thead th {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            padding: 1rem;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .table thead th:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .table thead th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.3;
+        }
+
+        .table thead th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+
+        .table thead th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+
+        .table tbody td {
+            border-color: rgba(255, 255, 255, 0.1);
+            padding: 0.9rem 1rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: transparent;
+        }
+
+        .projects-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .projects-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .projects-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 3px;
+        }
+
+        .project-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 992px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 500px;
+                position: static;
+            }
+            .map-wrapper {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <header class="header-section">
+        <div class="container">
+            <div class="text-center">
+                <h1><i class="fas fa-water"></i> Karnataka Irrigation Projects</h1>
+                <p class="text-gray-300 mb-4">
+  <i class="fas fa-file-alt"></i> Ongoing (37 Projects)
+  <br>
+  <span style="color:#a855f7; font-weight:500;">
+    Source:
+    <a href="https://waterresources.karnataka.gov.in/402/Irrigation%20Projects/en"
+       target="_blank"
+       style="color:#38bdf8; font-weight:600; text-decoration:underline; margin-left:6px;">
+       Ongoing
+    </a>
+  </span>
+</p>
+
+
+
+                <p class="subtitle">Real-time monitoring dashboard for irrigation infrastructure across Karnataka</p>
+            </div>
+            <ul class="nav nav-tabs justify-content-center">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" onclick="showTab('map'); return false;">
+                        <i class="fas fa-map-marked-alt"></i> Map View
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showTab('table'); return false;">
+                        <i class="fas fa-table"></i> Data Table
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="stats-container">
+        <div class="container">
+            <div class="row justify-content-around text-center" style="flex-wrap: nowrap; overflow-x: auto;">
+    <!-- Total Projects -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stat-card card-1">
+            <div class="stat-icon"><i class="fas fa-project-diagram"></i></div>
+            <span class="stat-value">{{ stats.get('total_projects', 0) }}</span>
+            <div class="stat-label">Total Projects</div>
+        </div>
+    </div>
+
+    <!-- Irrigation Gross Command Area -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stat-card card-2">
+            <div class="stat-icon"><i class="fas fa-water"></i></div>
+            <span class="stat-value">{{ "%.0f"|format(stats.get('irrigation_total', 0)) }}</span>
+            <div class="stat-label">Irrigation Gross Command Area (Ha)</div>
+        </div>
+    </div>
+
+    <!-- Storage Gross Capacity -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stat-card card-3">
+            <div class="stat-icon"><i class="fas fa-database"></i></div>
+            <span class="stat-value">{{ "%.0f"|format(stats.get('storage_total', 0)) }}</span>
+            <div class="stat-label">Storage Gross Capacity (TMC)</div>
+        </div>
+    </div>
+
+    <!-- Submergence Area -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stat-card card-4">
+            <div class="stat-icon"><i class="fas fa-map"></i></div>
+            <span class="stat-value">{{ "%.0f"|format(stats.get('submergence_total', 0)) }}</span>
+            <div class="stat-label">Submergence Area Total (Ha)</div>
+        </div>
+    </div>
+
+    <!-- Completed Projects -->
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="stat-card card-5">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <span class="stat-value">{{ stats.get('completed_projects', 0) }}</span>
+            <div class="stat-label">Completed Projects</div>
+        </div>
+    </div>
+</div>
+
+
+    </section>
+
+    <main>
+        <!-- Map View -->
+        <div id="mapView" class="main-layout">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">
+                        <i class="fas fa-list"></i> Projects Directory
+                    </h2>
+                    
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search projects..." 
+                               oninput="filterProjects()">
+                    </div>
+                    <!-- Dam Type Filter -->
+<div class="filter-box" style="margin-bottom: 1rem;">
+    <label for="damTypeFilter" style="font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 500;">
+        Dam Type:
+    </label>
+    <select id="damTypeFilter" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;" onchange="filterProjects()">
+        <option value="all" {% if selected_dam_type == 'all' %}selected{% endif %}>All</option>
+{% for t in dam_types %}
+    <option value="{{ t }}" {% if selected_dam_type == t %}selected{% endif %}>{{ t }}</option>
+{% endfor %}
+
+    </select>
+</div>
+
+<!-- Dam Length Filter -->
+<div class="filter-box" style="margin-bottom: 1rem;">
+    <label for="damLengthFilter" style="font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 500;">
+        Dam Length (m):
+    </label>
+    <select id="damLengthFilter" class="form-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px;" onchange="filterProjects()">
+        <option value="all">All</option>
+        <option value="0-1000">0–1000</option>
+        <option value="1000-2000">1000–2000</option>
+        <option value="2000+">More than 2000</option>
+
+    </select>
+</div>
+
+
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterByStatus('all')">
+                            All
+                        </button>
+                        <button class="filter-btn" onclick="filterByStatus('Completed')">
+                            Completed
+                        </button>
+                    </div>
+
+                    <div class="project-count" id="projectCount">
+                        Showing {{ projects|length }} projects
+                    </div>
+                </div>
+
+                <div class="projects-list" id="projectsList">
+                    {% for project in projects %}
+                    <div class="project-item"
+     data-status="{{ project.status }}"
+     data-name="{{ project.name|lower }}"
+     data-region="{{ project.region|lower }}"
+     data-lat="{{ project.lat }}"
+     data-lng="{{ project.lng }}"
+     data-type="{{ project.type|default('-')|lower }}"
+     data-length="{{ project.dam_length|default(0) }}"
+     style="--status-color:
+        {% if project.status == 'Completed' %}#10b981
+        {% elif project.status == 'Ongoing' %}#f59e0b
+        {% elif project.status == 'Planned' %}#6366f1
+        {% elif project.status == 'Under Construction' %}#f97316
+        {% elif project.status == 'Approved' %}#8b5cf6
+        {% else %}#6b7280{% endif %};"
+     onclick="selectProject(this, {{ project.lat }}, {{ project.lng }})">
+
+                        <div class="project-name">{{ project.name }}</div>
+                        <div class="project-meta">
+                            <span class="status-badge" style="--status-color: 
+                                {% if project.status == 'Completed' %}#10b981
+                                {% elif project.status == 'Ongoing' %}#f59e0b
+                                {% elif project.status == 'Planned' %}#6366f1
+                                {% elif project.status == 'Under Construction' %}#f97316
+                                {% elif project.status == 'Approved' %}#8b5cf6
+                                {% else %}#6b7280{% endif %};">
+                                {{ project.status }}
+                            </span>
+                            <span class="project-meta-item">
+                                <i class="fas fa-rupee-sign"></i>
+                                ₹{{ "%.1f"|format(project.amount) }}Cr
+                            </span>
+                            <span class="project-meta-item">
+                                <i class="fas fa-seedling"></i>
+                                {{ "%.0f"|format(project.hectares) }} Ha
+                            </span>
+                        </div>
+                        <div class="project-meta" style="margin-top: 0.4rem;">
+                            <span class="project-meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ project.region }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <div class="map-container">
+                <div class="map-wrapper">
+                    <div id="map">
+                        {{ map_html|safe }}
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <h3 class="legend-title"><i class="fas fa-info-circle"></i> Project Status Legend</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #10b981;"></div>
+                            <span class="legend-text">Completed</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f59e0b;"></div>
+                            <span class="legend-text">Ongoing</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #6366f1;"></div>
+                            <span class="legend-text">Planned</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f97316;"></div>
+                            <span class="legend-text">Under Construction</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #8b5cf6;"></div>
+                            <span class="legend-text">Approved</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table View -->
+        <div id="tableView" class="data-table-container">
+            <div class="container-fluid">
+                <div class="table-wrapper">
+                    <h2 class="sidebar-title mb-4">
+                        <i class="fas fa-database"></i> Complete Project Data
+                    </h2>
+                    
+                    <div class="table-controls">
+                        <div class="table-search" style="position: relative;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="tableSearchInput" placeholder="Search in table..." oninput="searchTable()">
+                        </div>
+                        <div class="table-entries">
+                            <label>Show</label>
+                            <select id="entriesPerPage" onchange="changeEntriesPerPage()">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="-1">All</option>
+                            </select>
+                            <label>entries</label>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+    <table id="projectsTable" class="table table-hover table-bordered" style="width:100%">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+                <tr>
+                    {% for col in columns %}
+                        <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+                    <div class="table-pagination">
+                        <div class="pagination-info" id="paginationInfo"></div>
+                        <div class="pagination-buttons" id="paginationButtons"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let currentPage = 1;
+        let entriesPerPage = 25;
+        let allRows = [];
+        let filteredRows = [];
+        let sortColumn = -1;
+        let sortAscending = true;
+
+        // Initialize table data
+        document.addEventListener('DOMContentLoaded', function() {
+            const tbody = document.getElementById('tableBody');
+            if (tbody) {
+                allRows = Array.from(tbody.getElementsByTagName('tr'));
+                filteredRows = [...allRows];
+                updatePagination();
+            }
+        });
+
+        // Search table
+        function searchTable() {
+            const searchTerm = document.getElementById('tableSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('tableBody');
+            
+            filteredRows = allRows.filter(row => {
+                const text = row.textContent.toLowerCase();
+                return text.includes(searchTerm);
+            });
+            
+            currentPage = 1;
+            updatePagination();
+        }
+
+        // Change entries per page
+        function changeEntriesPerPage() {
+            entriesPerPage = parseInt(document.getElementById('entriesPerPage').value);
+            currentPage = 1;
+            updatePagination();
+        }
+
+        // Sort table
+        function sortTable(columnIndex) {
+            const headers = document.querySelectorAll('#projectsTable thead th');
+            
+            // Toggle sort direction if same column
+            if (sortColumn === columnIndex) {
+                sortAscending = !sortAscending;
+            } else {
+                sortColumn = columnIndex;
+                sortAscending = true;
+            }
+            
+            // Update header classes
+            headers.forEach((header, index) => {
+                header.classList.remove('sort-asc', 'sort-desc');
+                if (index === columnIndex) {
+                    header.classList.add(sortAscending ? 'sort-asc' : 'sort-desc');
+                }
+            });
+            
+            // Sort rows
+            filteredRows.sort((a, b) => {
+                let aValue = a.cells[columnIndex].textContent.trim();
+                let bValue = b.cells[columnIndex].textContent.trim();
+                
+                // Check if it's a numeric column
+                const aCell = a.cells[columnIndex];
+                const bCell = b.cells[columnIndex];
+                
+                if (aCell.hasAttribute('data-value')) {
+                    aValue = parseFloat(aCell.getAttribute('data-value')) || 0;
+                    bValue = parseFloat(bCell.getAttribute('data-value')) || 0;
+                } else {
+                    // Remove currency symbols and convert to number if possible
+                    const aNum = parseFloat(aValue.replace(/[^0-9.-]+/g, ''));
+                    const bNum = parseFloat(bValue.replace(/[^0-9.-]+/g, ''));
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        aValue = aNum;
+                        bValue = bNum;
+                    }
+                }
+                
+                if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    return sortAscending ? aValue - bValue : bValue - aValue;
+                } else {
+                    return sortAscending ? 
+                        aValue.toString().localeCompare(bValue.toString()) :
+                        bValue.toString().localeCompare(aValue.toString());
+                }
+            });
+            
+            currentPage = 1;
+            updatePagination();
+        }
+
+        // Update pagination
+        function updatePagination() {
+            const tbody = document.getElementById('tableBody');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const paginationButtons = document.getElementById('paginationButtons');
+            
+            if (!tbody) return;
+            
+            // Clear tbody
+            tbody.innerHTML = '';
+            
+            // Calculate pagination
+            const totalEntries = filteredRows.length;
+            const showAll = entriesPerPage === -1;
+            const totalPages = showAll ? 1 : Math.ceil(totalEntries / entriesPerPage);
+            
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            
+            const startIndex = showAll ? 0 : (currentPage - 1) * entriesPerPage;
+            const endIndex = showAll ? totalEntries : Math.min(startIndex + entriesPerPage, totalEntries);
+            
+            // Display rows
+            for (let i = startIndex; i < endIndex; i++) {
+                tbody.appendChild(filteredRows[i]);
+            }
+            
+            // Update info
+            if (totalEntries === 0) {
+                paginationInfo.textContent = 'No entries to show';
+            } else {
+                paginationInfo.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
+            }
+            
+            // Update buttons
+            paginationButtons.innerHTML = '';
+            
+            if (!showAll && totalPages > 1) {
+                // Previous button
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'pagination-btn';
+                prevBtn.textContent = '← Previous';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updatePagination();
+                    }
+                };
+                paginationButtons.appendChild(prevBtn);
+                
+                // Page numbers
+                const maxButtons = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+                
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+                
+                if (startPage > 1) {
+                    const firstBtn = document.createElement('button');
+                    firstBtn.className = 'pagination-btn';
+                    firstBtn.textContent = '1';
+                    firstBtn.onclick = () => {
+                        currentPage = 1;
+                        updatePagination();
+                    };
+                    paginationButtons.appendChild(firstBtn);
+                    
+                    if (startPage > 2) {
+                        const dots = document.createElement('span');
+                        dots.textContent = '...';
+                        dots.style.padding = '0 0.5rem';
+                        dots.style.color = 'rgba(255, 255, 255, 0.5)';
+                        paginationButtons.appendChild(dots);
+                    }
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+                    pageBtn.textContent = i;
+                    pageBtn.onclick = () => {
+                        currentPage = i;
+                        updatePagination();
+                    };
+                    paginationButtons.appendChild(pageBtn);
+                }
+                
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const dots = document.createElement('span');
+                        dots.textContent = '...';
+                        dots.style.padding = '0 0.5rem';
+                        dots.style.color = 'rgba(255, 255, 255, 0.5)';
+                        paginationButtons.appendChild(dots);
+                    }
+                    
+                    const lastBtn = document.createElement('button');
+                    lastBtn.className = 'pagination-btn';
+                    lastBtn.textContent = totalPages;
+                    lastBtn.onclick = () => {
+                        currentPage = totalPages;
+                        updatePagination();
+                    };
+                    paginationButtons.appendChild(lastBtn);
+                }
+                
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'pagination-btn';
+                nextBtn.textContent = 'Next →';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        updatePagination();
+                    }
+                };
+                paginationButtons.appendChild(nextBtn);
+            }
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            const mapView = document.getElementById('mapView');
+            const tableView = document.getElementById('tableView');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            if (tab === 'map') {
+                mapView.style.display = 'flex';
+                tableView.classList.remove('active');
+                navLinks[0].classList.add('active');
+            } else {
+                mapView.style.display = 'none';
+                tableView.classList.add('active');
+                navLinks[1].classList.add('active');
+                // Reinitialize pagination when switching to table view
+                if (allRows.length === 0) {
+                    const tbody = document.getElementById('tableBody');
+                    if (tbody) {
+                        allRows = Array.from(tbody.getElementsByTagName('tr'));
+                        filteredRows = [...allRows];
+                        updatePagination();
+                    }
+                }
+            }
+        }
+
+        // Filter by status
+        function filterByStatus(status) {
+            currentFilter = status;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            filterProjects();
+        }
+
+        function filterProjects() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const damType = document.getElementById('damTypeFilter')?.value || 'all';
+    const damLength = document.getElementById('damLengthFilter')?.value || 'all';
+    const projects = document.querySelectorAll('.project-item');
+    let visibleCount = 0;
+
+    projects.forEach(project => {
+        const status = project.dataset.status;
+        const name = project.dataset.name;
+        const region = project.dataset.region;
+        const type = project.dataset.type?.toLowerCase() || '';
+        const length = parseFloat(project.dataset.length) || 0;
+
+        // Check dam type
+        const matchesType = damType === 'all' || type.includes(damType.toLowerCase());
+
+        // Check dam length range
+let matchesLength = true;
+if (damLength === '0-1000') matchesLength = length <= 1000;
+else if (damLength === '1000-2000') matchesLength = length > 1000 && length <= 2000;
+else if (damLength === '2000+' || damLength === '2000_plus') matchesLength = length > 2000;
+
+        // Status and search match
+        const matchesStatus = currentFilter === 'all' || status === currentFilter;
+        const matchesSearch = name.includes(searchTerm) || region.includes(searchTerm);
+
+        if (matchesStatus && matchesSearch && matchesType && matchesLength) {
+            project.style.display = 'block';
+            visibleCount++;
+        } else {
+            project.style.display = 'none';
+        }
+    });
+
+    document.getElementById('projectCount').textContent =
+        `Showing ${visibleCount} project${visibleCount !== 1 ? 's' : ''}`;
+}
+
+
+        // Select project and zoom to location
+        function selectProject(element, lat, lng) {
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Zoom to project location on map
+            zoomToLocation(lat, lng);
+        }
+
+        // Function to zoom and center map on Folium
+        function zoomToLocation(lat, lng) {
+            try {
+                // Get all iframes in the map div
+                const mapDiv = document.querySelector('#map');
+                const iframe = mapDiv.querySelector('iframe');
+                
+                if (iframe) {
+                    // Access the iframe's window
+                    const iframeWindow = iframe.contentWindow;
+                    
+                    // Send a message to the iframe to zoom to location
+                    // This works by injecting a script into the iframe
+                    const script = iframe.contentDocument.createElement('script');
+                    script.textContent = `
+                        (function() {
+                            // Wait for map to be available
+                            var checkMap = setInterval(function() {
+                                // Try to find the Leaflet map object
+                                if (typeof L !== 'undefined') {
+                                    // Get all map instances
+                                    var maps = [];
+                                    for (var key in window) {
+                                        if (window[key] instanceof L.Map) {
+                                            maps.push(window[key]);
+                                        }
+                                    }
+                                    
+                                    // If we found a map, zoom to it
+                                    if (maps.length > 0) {
+                                        var map = maps[0];
+                                        map.setView([${lat}, ${lng}], 13, {
+                                            animate: true,
+                                            duration: 1
+                                        });
+                                        
+                                        // Try to open the popup for this location
+                                        setTimeout(function() {
+                                            map.eachLayer(function(layer) {
+                                                if (layer instanceof L.CircleMarker || layer instanceof L.Marker) {
+                                                    var latlng = layer.getLatLng();
+                                                    if (latlng && Math.abs(latlng.lat - ${lat}) < 0.001 && 
+                                                        Math.abs(latlng.lng - ${lng}) < 0.001) {
+                                                        if (layer.openPopup) {
+                                                            layer.openPopup();
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }, 800);
+                                        
+                                        clearInterval(checkMap);
+                                    }
+                                }
+                            }, 100);
+                            
+                            // Stop trying after 5 seconds
+                            setTimeout(function() {
+                                clearInterval(checkMap);
+                            }, 5000);
+                        })();
+                    `;
+                    
+                    // Inject the script
+                    if (iframe.contentDocument && iframe.contentDocument.body) {
+                        iframe.contentDocument.body.appendChild(script);
+                    }
+                    
+                    // Show notification
+                    showNotification(`Zooming to project location`);
+                } else {
+                    showNotification(`Selected project at coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                }
+            } catch (error) {
+                console.log('Map zoom attempted:', lat, lng, error);
+                showNotification(`Selected project - Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }
+        }
+
+        // Show notification
+        function showNotification(message) {
+            // Remove existing notification
+            const existingNotification = document.querySelector('.notification-toast');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification-toast';
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 2rem;
+                background: linear-gradient(135deg, #6366f1, #a855f7);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+                z-index: 10000;
+                font-size: 0.9rem;
+                max-width: 300px;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem;"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS for notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
